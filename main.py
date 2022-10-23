@@ -32,7 +32,7 @@ async def on_message(ctx, rlUser, discord):
 	with open(playersFile, "w") as players:
 		json.dump(jsonData, players)
 
-	ctx.message.reply(f"Added {rlUser}")
+	await ctx.message.reply(f"Added {rlUser}")
 
 # Main
 def main():
