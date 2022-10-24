@@ -21,13 +21,21 @@ client = commands.Bot(command_prefix=commandPrefix, intents=givenIntents)
 @commands.has_permissions(administrator=True)
 async def add_command(ctx, rlUser, discord):
 	jsonData = {}
+	guildID = str(ctx.guild.id)
 
 	with open(playersFile, "r") as players:
 		jsonData = json.loads(players.read())
 
-	jsonData[rlUser] = {
-		"discord": discord
-	}
+	try:
+		jsonData[guildID][rlUser] = {
+			"discord": discord
+		}
+	except KeyError:
+		jsonData[guildID] = {}
+
+		jsonData[guildID][rlUser] = {
+			"discord": discord
+		}
 
 	with open(playersFile, "w") as players:
 		json.dump(jsonData, players)
@@ -38,30 +46,36 @@ async def add_command(ctx, rlUser, discord):
 @commands.has_permissions(administrator=True)
 async def listplayers_command(ctx):
 	jsonData = {}
+	guildID = str(ctx.guild.id)
+
 
 	with open(playersFile, "r") as players:
 		jsonData = json.loads(players.read())
 
 	playerList = ""
 
-	for player in jsonData:
-		playerList += f"RL Username: {player},\n"
+	for player in jsonData[guildID]:
+		playerList += f"- {player}\n"
 	
 	sender = ctx.author
 
-	await sender.send("Player list\n" + playerList)
+	await sender.send("Player list by Rocket League username\n```" + playerList + "```")
 
 @client.command(name="clearplayers")
 @commands.has_permissions(administrator=True)
 async def clearplayers_command(ctx):
-    replace = "{}"
-    
-    with open(playersFile, "w") as players:
-        players.write(replace)
-    
-    sender = ctx.author
-    
-    await ctx.reply("Cleared the player list")
+	jsonData = {}
+	guildID = str(ctx.guild.id)
+
+	with open(playersFile, "r") as players:
+		jsonData = json.loads(players.read())
+
+	jsonData[guildID] = {}
+
+	with open(playersFile, "w") as players:
+		json.dump(jsonData, players)
+
+	await ctx.message.reply("Cleared the player list")
 
 # Main
 def main():
